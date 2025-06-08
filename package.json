@@ -1,0 +1,26 @@
+{
+  "name": "subsunday-back-drizzle",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.15.2",
+    "@types/tmi.js": "^1.8.6",
+    "drizzle-kit": "^0.31.1",
+    "tsx": "^4.19.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@date-fns/tz": "^1.2.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.0",
+    "fuse.js": "^7.1.0",
+    "pg": "^8.16.0",
+    "socket.io": "^4.8.1",
+    "tmi.js": "^1.8.5"
+  }
+}

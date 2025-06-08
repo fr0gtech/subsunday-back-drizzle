@@ -1,0 +1,1 @@
+CREATE INDEX "name_search_index" ON "Game" USING gin (to_tsvector('english', "name"));

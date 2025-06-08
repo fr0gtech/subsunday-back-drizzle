@@ -1,0 +1,1 @@
+ALTER TABLE "Vote" ADD COLUMN "voteText" text NOT NULL;
