@@ -8,7 +8,7 @@ import { initSocket, io } from "./socket";
 import { initTwitchIRC } from "./twitch";
 import { db } from "./db";
 import { and, between, eq } from "drizzle-orm";
-import { user, vote, vote } from "./db/schema";
+import { user, vote } from "./db/schema";
 
 const CHANNEL = process.env.TWITCH_CHANNEL_NAME;
 
@@ -18,7 +18,7 @@ await init()
 async function init(){
    checkENV(CHANNEL as string)
    await loadGames()
-    // runDev()
+    runDev()
    initSocket()
    initTwitchIRC(CHANNEL)
 }
@@ -44,6 +44,7 @@ export async function onMessage(message: string, userstate: ChatUserstate) {
 // this gets triggered if valid vote string
 async function registerVote(userstate: ChatUserstate, gameMsg: string) {
   const now = new TZDate(new Date(), process.env.TZ)
+  
   const range = getDateRange()
   // get current vote range
   let userById: any
@@ -62,11 +63,13 @@ async function registerVote(userstate: ChatUserstate, gameMsg: string) {
             streak: 0
         }).returning()
     }
+    
     const lastVote = await db.query.vote.findFirst({
         where: 
-        and(eq(vote.fromId, parseInt(userstate["user-id"] as string) || 0),
-          between(vote.createdAt, range.currentPeriod.startDate.toDateString(),
-          range.currentPeriod.endDate.toDateString()
+        and(
+          eq(vote.fromId, parseInt(userstate["user-id"] as string) || 0),
+          between(vote.createdAt, range.currentPeriod.startDate,
+          range.currentPeriod.endDate
         )) 
     })
 
@@ -137,11 +140,11 @@ async function registerVote(userstate: ChatUserstate, gameMsg: string) {
 
     io.to("main")
     .emit("voteUpdate", {
-      for: {
+      game: {
         name: gameOnDb?.name || gameMsg,
         id: gameOnDb?.id,
       },
-      from: { name: user.name, id: user.id },
+      user: { name: user.name, id: user.id },
     });
 
   }else{
@@ -177,11 +180,11 @@ async function registerVote(userstate: ChatUserstate, gameMsg: string) {
 
     io.to("main")
     .emit("vote", {
-      for: {
+      game: {
         name: gameOnDb?.name || gameMsg,
         id: gameOnDb?.id,
       },
-      from: { name: userById[0].name, id: userById[0].id },
+      user: { name: userById[0].name, id: userById[0].id },
     });
   }
   if (!gameOnDb) throw new Error("no game")
@@ -201,7 +204,7 @@ function runDev(){
   }, 5000)
 }
     //  setInterval(() => {
-    //      io.to("main").emit("vote", {for: {name: "Sea of Stars", id: 123}, from: {name: "gaggi", id: 123}})
+    //      io.to("main").emit("vote", {game: {name: "Dave The Diver", id: 7}, user: {name: "gaggi", id: 123}})
     //      console.log("send msg");
     //  }, 1000);
 
