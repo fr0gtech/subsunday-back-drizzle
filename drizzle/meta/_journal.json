@@ -64,6 +64,41 @@
       "when": 1749494906404,
       "tag": "0008_magical_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1762098844660,
+      "tag": "0009_cute_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1762456444981,
+      "tag": "0010_pretty_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1762523054750,
+      "tag": "0011_lyrical_thundra",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1762526358028,
+      "tag": "0012_condemned_piledriver",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1762549783346,
+      "tag": "0013_careless_gauntlet",
+      "breakpoints": true
     }
   ]
 }

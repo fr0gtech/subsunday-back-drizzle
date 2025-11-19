@@ -1,15 +1,52 @@
-# subsunday-back-drizzle
+# Sub Sunday Backend (drizzle)
 
-To install dependencies:
+This is the backend of [sub-sunday.com](https://sub-sunday.com/). This reads chat via IRC and saves votes. It includes the [socket.io](http://socket.io) logic for realtime updates. `streak.ts` is ran from crontab every sunday at 23:59 to check for streaks.
 
-```bash
-bun install
-```
+## Voting period
 
-To run:
+`Sunday(00:00) - Saturday (22:00)` `GMT-4` `America/New_York`
 
-```bash
-bun run index.ts
-```
+## Setup
 
-This project was created using `bun init` in bun v1.2.10. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+DATABASE_URL="postgres://postgres:postgres@localhost:5432/subsundaydrizz"
+SOCKET_ORIGIN="http://localhost:5173"
+SOCKET_PORT=3001
+TZ="America/New_York"
+FROM_DAY=0
+FROM_TIME="00:00"
+TO_DAY=6
+TO_TIME="22:00"
+TWITCH_CHANNEL_NAME="dirtytomat0"
+
+Set servers Timezone to: America/New_York `sudo timedatectl set-timezone America/New_York`
+Generate Drizzle schema: `bunx drizzle-kit generate`
+Push schema to DB: `bunx drizzle-kit push`
+## Setup crontab
+
+`01 22 * * SAT cd /opt/subsunday-back/ && /home/subsunday/.bun/bin/bun scripts/streak.ts`
+
+## Frontend
+The Frontend can be found [here](https://github.com/fr0gtech/subsunday-front)
+
+## Features
+
+- Realtime updates with [socket.io](https://socket.io/)
+- IRC Twitch reader
+- Match vote to steam game
+
+## Development
+
+Check .env file
+
+*requirements*:
+
+- Bun.js
+- postgresql
+1. `bun install`
+2. `bun src/index.ts`
+
+## Seeding
+
+For development purposes we have a `seed.ts` file to create fake votes
+
+`bun src/seed.ts`
