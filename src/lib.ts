@@ -16,6 +16,7 @@ import { desc, eq, sql, type AnyColumn} from "drizzle-orm";
 import { game } from "./db/schema";
 import type { Game } from "./db/types";
 import type { DateRangeOptions, SteamGame } from "./types";
+import { sleep } from "bun";
 
 export let games: SteamGame[];
 export let gamesFetchTime: Date;
@@ -31,7 +32,7 @@ export function getDateRange(options?: DateRangeOptions) {
   const toDay = (_toDay || process.env.TO_DAY) as Day;
   const toTime = (_toTime || process.env.TO_TIME) as string;
 
-  const now = new TZDate(offset || new Date(), process.env.TIMEZONE);
+  const now = offset || new Date();
   const [fromHour, fromMinute]: number[] = fromTime.split(":").map(Number);
   const [toHour, toMinute] = toTime.split(":").map(Number);
 
@@ -113,6 +114,7 @@ export const createGameOnDb = async (match: { name: string; appId: number | null
     }).returning()
   } else {
     const steamAppDetails = await getInfobyId(match.appId)
+    
     const moreInfo = (steamAppDetails as any)[match.appId].data;
     if (!moreInfo || !(steamAppDetails as any)[match.appId].success) {
       // if we get a game like lol that is on steam game list but we cant get detail page just call itself with no appid
@@ -174,10 +176,23 @@ export async function findClosestSteamGame(userInput: string) {
 }
 
 export async function getInfobyId(appId: number) {
+  // when rebuilding votes this may hit a rate limit?
   const url = new URL("https://store.steampowered.com/api/appdetails")
   url.searchParams.set("appids", appId.toString());
   url.searchParams.set("cc", "us");
-  return await fetch(url.toString()).then((e) => e.json());
+  const resp = await fetch(url.toString())
+  const json = await resp.json()
+  if (resp.status === 429){
+    // we hit steam rate limit wait for a bit and rerun self
+    console.log("hit steam rate limit sleeping for 15000");
+    
+    await sleep(15000)
+    return await getInfobyId(appId)
+  }else if (resp.status !== 200){
+    console.log(resp);
+  }
+  return json
+  
 }
 
 export function delay(ms: number) {

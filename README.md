@@ -8,15 +8,8 @@ This is the backend of [sub-sunday.com](https://sub-sunday.com/). This reads cha
 
 ## Setup
 
-DATABASE_URL="postgres://postgres:postgres@localhost:5432/subsundaydrizz"
-SOCKET_ORIGIN="http://localhost:5173"
-SOCKET_PORT=3001
-TZ="America/New_York"
-FROM_DAY=0
-FROM_TIME="00:00"
-TO_DAY=6
-TO_TIME="22:00"
-TWITCH_CHANNEL_NAME="dirtytomat0"
+Votes can fully be build from `buildVotes.ts` as long as the API used is available.
+The timestamps there are in GMT+0 timezone so we convert them to America/New_York before inserting into db
 
 Set servers Timezone to: America/New_York `sudo timedatectl set-timezone America/New_York`
 Generate Drizzle schema: `bunx drizzle-kit generate`

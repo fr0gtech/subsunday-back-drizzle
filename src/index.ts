@@ -42,7 +42,7 @@ async function init() {
   // runDev()
   initSocket()
   initTwitchIRC(CHANNEL)
-
+  
 }
 
 // we check every 1h if we need to reload games and maybe more in the future
@@ -74,8 +74,8 @@ export async function onMessage(message: string, userstate: ChatUserstate) {
   }
 }
 
-async function registerVote(userstate: ChatUserstate, gameMsg: string) {
-  const now = new TZDate(new Date(), process.env.TIMEZONE)
+export async function registerVote(userstate: ChatUserstate, gameMsg: string) {
+  const now = new Date()
 
   const range = getDateRange()
   let userById: any
