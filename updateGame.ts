@@ -1,6 +1,8 @@
 import { eq } from "drizzle-orm";
 import { db } from "./src/db";
 import { game, vote } from "./src/db/schema";
+import { getInfobyId } from "./src/lib";
+import { TZDate } from "@date-fns/tz";
 
 /**
  * this script helps if our game matching matches wrong we can force a steamID
@@ -8,35 +10,26 @@ import { game, vote } from "./src/db/schema";
  * input would be cool to be able to search or at least input wrong game by id and then steamId, it should update the info
  */
 (async () => {
-    const games = await db.select().from(game);
+    const gameToUpdateId = 12
+    const updateTo = 1422450
+    const steamAppDetails = await getInfobyId(updateTo)
+    const moreInfo = (steamAppDetails as any)[updateTo].data;
 
-    const groups = new Map<number, typeof games>();
-
-    for (const g of games) {
-        if (g.steamId === 0) continue; 
-
-        if (!groups.has(g.steamId)) groups.set(g.steamId, []);
-        groups.get(g.steamId)!.push(g);
-    }
-
-    for (const [steamId, group] of groups) {
-        if (group.length <= 1) continue; 
-
-        console.log(
-            `SteamID ${steamId} has duplicates: ${group
-                .map((g) => `${g.name}:${g.id}`)
-                .join(" ")}`
-        );
-
-        const master = group[0];
-        const duplicates = group.slice(1);
-
-        for (const dup of duplicates) {
-            console.log(` → deleting duplicate ${dup.id}`);
-             await db.update(vote)
-                .set({ forId: master?.id })
-                .where(eq(vote.forId, dup.id));
-            await db.delete(game).where(eq(game.id, dup.id))
-        }
-    }
+    await db.update(game).set({
+        name: moreInfo.name,
+        picture: moreInfo.header_image || "",
+        link: "",
+        steamId: updateTo,
+        description: moreInfo.short_description || "",
+        website: moreInfo.website || "",
+        dev: moreInfo.developers || [""],
+        price: moreInfo.is_free ? { final: "free" } : moreInfo.price_overview || { final: "n/a" },
+        categories: moreInfo.genres || {},
+        recommendations: moreInfo.recommendations ? moreInfo.recommendations.total : 0,
+        screenshots: moreInfo.screenshots,
+        detailedDescription: JSON.stringify({ html: moreInfo.detailed_description }),
+        movies: moreInfo.movies,
+        createdAt: new TZDate(new Date(), process.env.TIMEZONE),
+        updatedAt: new TZDate(new Date(), process.env.TIMEZONE),
+    }).where(eq(game.id, gameToUpdateId))
 })();
