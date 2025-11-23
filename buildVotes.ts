@@ -1,6 +1,6 @@
 import type { ChatUserstate } from "tmi.js"
-import { and, between, eq } from "drizzle-orm"
-import { isAfter } from "date-fns"
+import { and, asc, between, desc, eq } from "drizzle-orm"
+import { isAfter, isSameDay } from "date-fns"
 import { getDateRange, getSteamAppIdFromURL, getGameOnDb, findClosestSteamGame, createGameOnDb, increment, loadGames } from "./src/lib"
 import { db } from "./src/db"
 import { user, vote } from "./src/db/schema"
@@ -37,6 +37,9 @@ let cacheDir = `${import.meta.dir}/cache`;
 (async () => {
     await loadGames()
     // cachedFiles = await readdir(import.meta.dir + "/cache");
+    const lastVote = await db.select().from(vote).limit(1).orderBy(asc(vote.createdAt))
+    // we only build data from day of last vote we got
+
     const availableLogsApiUrl = new URL("list", apiBase);
     availableLogsApiUrl.searchParams.set("channel", process.env.TWITCH_CHANNEL_NAME)
     const availableLogs: AvailableLogs = await fetch(availableLogsApiUrl).then((e) => e.json()) as AvailableLogs
@@ -44,26 +47,37 @@ let cacheDir = `${import.meta.dir}/cache`;
     const logsApiBase = new URL("channel" + process.env.TWITCH_CHANNEL_NAME, apiBase);
 
     for (const availableDay of availableDays) {
-        const apiUrl = new URL(
-            `channel/${process.env.TWITCH_CHANNEL_NAME}/${availableDay.year}/${availableDay.month}/${availableDay.day}`,
-            logsApiBase
+        const availableDayDate = new Date(
+            Number(availableDay.year),
+            Number(availableDay.month) - 1,
+            Number(availableDay.day)
         );
-        apiUrl.searchParams.set("jsonBasic", "1")
-        // const fileName = `${process.env.TWITCH_CHANNEL_NAME}_${availableDay.year}_${availableDay.month}_${availableDay.day}.json`
+        if (isSameDay(availableDayDate, lastVote[0]?.createdAt as Date) || isAfter(lastVote[0]?.createdAt as Date, availableDayDate)) {
+            const apiUrl = new URL(
+                `channel/${process.env.TWITCH_CHANNEL_NAME}/${availableDay.year}/${availableDay.month}/${availableDay.day}`,
+                logsApiBase
+            );
+            apiUrl.searchParams.set("jsonBasic", "1")
+            // const fileName = `${process.env.TWITCH_CHANNEL_NAME}_${availableDay.year}_${availableDay.month}_${availableDay.day}.json`
 
-        // if (cachedFiles.includes(fileName)) {
-        //     console.log("got file");
-        //     const file = Bun.file(`${cacheDir}/${fileName}`);
-        //     const chatMessages: ChatMessages = await file.json();
-        //     await registerVoteWtimeWrapper(chatMessages)
+            // if (cachedFiles.includes(fileName)) {
+            //     console.log("got file");
+            //     const file = Bun.file(`${cacheDir}/${fileName}`);
+            //     const chatMessages: ChatMessages = await file.json();
+            //     await registerVoteWtimeWrapper(chatMessages)
 
-        // } else {
-        //     const chatMessages: ChatMessages = await fetch(apiUrl).then((e) => e.json()) as ChatMessages
-        //     await Bun.write(`${cacheDir}/${fileName}`, JSON.stringify(chatMessages));
-        //     await registerVoteWtimeWrapper(chatMessages)
-        // }
-        const chatMessages: ChatMessages = await fetch(apiUrl).then((e) => e.json()) as ChatMessages
-        await registerVoteWtimeWrapper(chatMessages)
+            // } else {
+            //     const chatMessages: ChatMessages = await fetch(apiUrl).then((e) => e.json()) as ChatMessages
+            //     await Bun.write(`${cacheDir}/${fileName}`, JSON.stringify(chatMessages));
+            //     await registerVoteWtimeWrapper(chatMessages)
+            // }
+            const chatMessages: ChatMessages = await fetch(apiUrl).then((e) => e.json()) as ChatMessages
+            await registerVoteWtimeWrapper(chatMessages)
+        }else{
+            console.log("skipping day", availableDayDate);
+            
+        }
+
 
     }
 })()
