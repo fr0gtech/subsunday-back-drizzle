@@ -1,6 +1,6 @@
 # Sub Sunday Backend (drizzle)
 
-This is the backend of [sub-sunday.com](https://sub-sunday.com/). This reads chat via IRC and saves votes. It includes the [socket.io](http://socket.io) logic for realtime updates. `streak.ts` is ran from crontab every sunday at 23:59 to check for streaks.
+This is the backend of [sub-sunday.com](https://sub-sunday.com/). This reads chat via IRC and saves votes. It includes the [socket.io](http://socket.io) logic for realtime updates. `streak.ts` is ran from crontab every sunday at 22:01 to check for streaks.
 
 ## Voting period
 
