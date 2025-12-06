@@ -1,6 +1,6 @@
 import type { ChatUserstate } from "tmi.js"
 import { and, asc, between, desc, eq } from "drizzle-orm"
-import { isAfter, isSameDay } from "date-fns"
+import { isAfter, isBefore, isSameDay } from "date-fns"
 import { getDateRange, getSteamAppIdFromURL, getGameOnDb, findClosestSteamGame, createGameOnDb, increment, loadGames } from "./src/lib"
 import { db } from "./src/db"
 import { user, vote } from "./src/db/schema"
@@ -37,7 +37,7 @@ let cacheDir = `${import.meta.dir}/cache`;
 (async () => {
     await loadGames()
     // cachedFiles = await readdir(import.meta.dir + "/cache");
-    const lastVote = await db.select().from(vote).limit(1).orderBy(asc(vote.createdAt))
+    const lastVote = await db.select().from(vote).limit(1).orderBy(desc(vote.createdAt))
     // we only build data from day of last vote we got
 
     const availableLogsApiUrl = new URL("list", apiBase);
@@ -52,7 +52,7 @@ let cacheDir = `${import.meta.dir}/cache`;
             Number(availableDay.month) - 1,
             Number(availableDay.day)
         );
-        if (isSameDay(availableDayDate, lastVote[0]?.createdAt as Date) || isAfter(lastVote[0]?.createdAt as Date, availableDayDate)) {
+        if (isSameDay(availableDayDate, lastVote[0]?.createdAt as Date) || isBefore(lastVote[0]?.createdAt as Date, availableDayDate)) {
             const apiUrl = new URL(
                 `channel/${process.env.TWITCH_CHANNEL_NAME}/${availableDay.year}/${availableDay.month}/${availableDay.day}`,
                 logsApiBase
