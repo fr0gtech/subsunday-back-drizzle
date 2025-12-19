@@ -1,0 +1,1 @@
+ALTER TABLE "SubSundayMoment" ALTER COLUMN "streamId" SET DATA TYPE text;

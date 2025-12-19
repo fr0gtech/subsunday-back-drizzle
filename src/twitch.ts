@@ -1,7 +1,8 @@
-import tmi, { ChatUserstate } from "tmi.js";
+import tmi, { type ChatUserstate } from "tmi.js";
 import { onMessage } from ".";
 
-export const initTwitchIRC = (CHANNEL) => {
+
+export const initTwitchIRC = (CHANNEL: string) => {
 
     const twitchIRC = new tmi.Client({
         channels: [CHANNEL],

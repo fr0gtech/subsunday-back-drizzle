@@ -1,0 +1,2 @@
+ALTER TABLE "SubSundayMoment" RENAME COLUMN "durationSeconds" TO "durationMilliseconds";--> statement-breakpoint
+ALTER TABLE "SubSundayMoment" RENAME COLUMN "positionSeconds" TO "positionMilliseconds";

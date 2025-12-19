@@ -298,3 +298,36 @@ export async function igdbSearch(gameMsg: string) {
     "mode": "cors"
   });
 }
+
+
+export type MomentType = {
+    id: string;
+    durationMilliseconds: number;
+    positionMilliseconds: number;
+    type: string;
+    gameId?: number;
+    description: string;
+}
+
+export const getMoments = async (vodId: string): Promise<MomentType[]> => {
+  let body: any = {
+    operationName: 'VideoPreviewCard__VideoMoments',
+    variables: { videoId: vodId },
+    extensions: {
+      persistedQuery: {
+        version: 1,
+        sha256Hash: '7399051b2d46f528d5f0eedf8b0db8d485bb1bb4c0a2c6707be6f1290cdcb31a',
+      },
+    },
+  };
+
+  const data:any = await fetch('https://gql.twitch.tv/gql', {
+    headers: { 'Client-Id': process.env.TWITCH_CHAT_DL_CLIENT_ID as string },
+    referrer: 'https://www.twitch.tv/',
+    body: JSON.stringify(body),
+    method: 'POST',
+    mode: 'cors',
+  }).then((e) => e.json());
+  const moments = data.data.video.moments.edges.map((e: any) => e.node);
+  return moments;
+};

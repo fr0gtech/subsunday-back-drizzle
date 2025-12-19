@@ -1,0 +1,1 @@
+ALTER TABLE "SubSundayMoment" ADD COLUMN "description" text NOT NULL;

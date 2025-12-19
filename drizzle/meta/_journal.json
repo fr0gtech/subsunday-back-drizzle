@@ -113,6 +113,62 @@
       "when": 1763826442412,
       "tag": "0015_early_wong",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1766012593931,
+      "tag": "0016_little_lord_hawal",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1766017476469,
+      "tag": "0017_modern_mystique",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1766017778575,
+      "tag": "0018_colossal_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1766017816189,
+      "tag": "0019_lame_mindworm",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1766018026811,
+      "tag": "0020_illegal_skrulls",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1766018176366,
+      "tag": "0021_messy_prowler",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1766018590853,
+      "tag": "0022_bored_unicorn",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1766106342779,
+      "tag": "0023_silky_spectrum",
+      "breakpoints": true
     }
   ]
 }

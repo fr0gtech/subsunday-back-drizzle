@@ -1,0 +1,1 @@
+ALTER TABLE "SubSundayMoment" ALTER COLUMN "description" SET DEFAULT '';
