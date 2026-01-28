@@ -68,6 +68,10 @@ export async function findOnIGDB(query: string): Promise<GameIGDB | null> {
         // maybe we could try first with 10 and them load more if we cant find exact match but idk
         const cleanedSearch = query.replace(/[^\x00-\x7F]/g, '');
         const gameSearchRaw = await IGDBreq<GameFromSearch[]>('search', `search "${cleanedSearch}"; fields game,name;limit 500;`)
+        if (gameSearchRaw.length === 0){
+            console.log("could not find any game in IGDB:", cleanedSearch);
+            return null
+        }
         const gameSearchIds = gameSearchRaw.map((e)=>e.game).filter((e)=>e)
         
         const allSearchedGames = await IGDBreq<MultiQuery<GameFromSearchHypes[]>[]>('multiquery',
@@ -103,7 +107,6 @@ export async function findOnIGDB(query: string): Promise<GameIGDB | null> {
         return {...game[0], websites: game[0]?.websites?.sort((a,b) => a.type - b.type)} as GameIGDB
     
     } else {
-        console.log("could not find game?");
         return null
     }
 }

@@ -205,7 +205,7 @@ export async function findGame(gameMsg: string){
   // we could just regex for a roman number at the end of a game and search in both direction but idk kinda messy, igdb does also not handle this well example: CODE VEIN II
 
   let gameOnDb: Game | undefined = await getGameOnDb(gameMsg, idFromLink)
-
+  
   // game on db was updated more than 24h ago so update it again and try to match to steam
   if (gameOnDb && gameOnDb.steamId > 0){
     if (isAfter(addDays(gameOnDb?.updatedAt as Date, 1), new Date()) ){
@@ -222,7 +222,7 @@ export async function findGame(gameMsg: string){
   // we try to find a steam game
   const match = idFromLink ? { name: "", appId: parseInt(idFromLink) } : await findClosestSteamGame(gameMsg)
   
-  if (!match.appId){
+  if (!match.appId && !gameOnDb){
     const gameOnIGDB = await findOnIGDB(gameMsg)
     // console.log("found game", gameOnIGDB, gameMsg);
     
@@ -233,7 +233,7 @@ export async function findGame(gameMsg: string){
       const newGame = await createGameOnDb(match, gameMsg)
       gameOnDb = newGame[0]     
     }
-  }else{
+  }else if (!gameOnDb){
       const newGame = await createGameOnDb(match, gameMsg)
       gameOnDb = newGame[0]   
   }
