@@ -1,0 +1,1 @@
+ALTER TABLE "Game" ADD COLUMN "igdbId" serial DEFAULT 0 NOT NULL;

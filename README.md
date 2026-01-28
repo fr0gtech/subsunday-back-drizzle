@@ -18,6 +18,8 @@ Push schema to DB: `bunx drizzle-kit push`
 
 `01 22 * * SAT cd /opt/subsunday-back/ && /home/subsunday/.bun/bin/bun scripts/streak.ts`
 
+`0 0 * * MON cd /opt/subsunday-back/ && /home/subsunday/.bun/bin/bun scripts/getMoments.ts`
+
 ## Frontend
 The Frontend can be found [here](https://github.com/fr0gtech/subsunday-front-svelte)
 

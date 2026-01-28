@@ -169,6 +169,20 @@
       "when": 1766106342779,
       "tag": "0023_silky_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1769618493257,
+      "tag": "0024_polite_eddie_brock",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1769618558624,
+      "tag": "0025_aberrant_whiplash",
+      "breakpoints": true
     }
   ]
 }

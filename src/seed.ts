@@ -3,6 +3,7 @@
 
 import { onMessage } from ".";
 import { seedGames, usernames } from "./data";
+import { initIGDB } from "./igdb";
 import { delay } from "./lib";
 
 export function generateRandomRewardMsg() {
@@ -33,9 +34,10 @@ export function generateRandomRewardMsg() {
 }
 
 (async () => {
-  const rewardMessages = Array.from({ length: 100 }, generateRandomRewardMsg);
+  await initIGDB()
+  const rewardMessages = Array.from({ length: 500 }, generateRandomRewardMsg);
   for (const e of rewardMessages) {
     await onMessage(e.msg, e.userstate as any);
-    await delay(100); // optional delay
+    await delay(1000); // optional delay
   }
 })();
