@@ -37,6 +37,7 @@ import { checkIfSteamBanned, findClosestSteamGame, getInfobyId, getSteamAppIdFro
             // we found a steam game
             const steamAppDetails = await getInfobyId(match.appId)
             const moreInfo = (steamAppDetails as any)[match.appId].data;
+            if (!moreInfo || !moreInfo.name) continue; 
             await db.update(game).set({
                 name: moreInfo.name,
                 picture: moreInfo.header_image || "",
