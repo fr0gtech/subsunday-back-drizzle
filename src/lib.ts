@@ -92,7 +92,17 @@ export const getGameOnDb = async (gameMsg: string, steamId: string | undefined) 
         to_tsvector('english', ${game.name})
         @@ plainto_tsquery('english', ${gameMsg})
       `,
-      orderBy: (t) => desc(t.recommendations)
+      // look for exact match and stuff
+      orderBy: sql`
+        CASE 
+          WHEN LOWER(${game.name}) = LOWER(${gameMsg}) THEN 0
+          WHEN LOWER(${game.name}) LIKE LOWER(${gameMsg}) || '%' THEN 1
+          ELSE 2
+        END,
+        LENGTH(${game.name}),
+        ${game.recommendations} DESC,
+        ${game.id}
+      `
     });
   }
 }
