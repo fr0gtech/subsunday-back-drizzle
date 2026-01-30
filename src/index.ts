@@ -82,7 +82,7 @@ export async function onMessage(message: string, userstate: ChatUserstate) {
   }
 }
 
-export async function registerVote(userstate: ChatUserstate, gameMsg: string, timestamp?: string) {
+export async function registerVote(userstate: ChatUserstate, gameMsg: string) {
   // how we match games.
   /**
    * @param userstate
@@ -99,9 +99,9 @@ export async function registerVote(userstate: ChatUserstate, gameMsg: string, ti
    * 5. Add game with no info or with info that we found
    */
 
-  const now = timestamp ? new Date(timestamp) : new Date()
+  const now = new Date()
 
-  const range = getDateRange({ offset: now })
+  const range = getDateRange()
 
   let userById: any
   userById = await db.query.user.findFirst({
@@ -155,14 +155,14 @@ export async function registerVote(userstate: ChatUserstate, gameMsg: string, ti
     })
       .where(eq(vote.id, lastVote.id))
 
-    io.to("main")
-      .emit("voteUpdate", {
-        game: {
-          name: gameOnDb?.name || gameMsg,
-          id: gameOnDb?.id,
-        },
-        user: { name: userById.name, id: userById.id },
-      });
+        io.to("main")
+          .emit("voteUpdate", {
+            game: {
+              name: gameOnDb?.name || gameMsg,
+              id: gameOnDb?.id,
+            },
+            user: { name: userById.name, id: userById.id },
+          });
   } else {
     // new vote for this period
     await db.insert(vote).values({
@@ -179,15 +179,14 @@ export async function registerVote(userstate: ChatUserstate, gameMsg: string, ti
     })
     .where(eq(user.id, userById.id));
 
-
-    io.to("main")
-      .emit("vote", {
-        game: {
-          name: gameOnDb?.name || gameMsg,
-          id: gameOnDb?.id,
-        },
-        user: { name: userById.name, id: userById.id },
-      });
+      io.to("main")
+        .emit("vote", {
+          game: {
+            name: gameOnDb?.name || gameMsg,
+            id: gameOnDb?.id,
+          },
+          user: { name: userById.name, id: userById.id },
+        });
   }
   
   if (!gameOnDb) throw new Error("no game")
@@ -217,11 +216,13 @@ export async function findGame(gameMsg: string){
         gameOnDb = updatedGame[0]
       }
     }
-  }else if (gameOnDb?.steamId === 0 && gameOnDb.igdbId){
-      const gameOnIGDB = await findOnIGDB("", gameOnDb.igdbId)
-      if (!gameOnIGDB) return
-      const data = IGDBToGameForDb(gameOnIGDB)
-      await db.update(game).set(data).where((eq(game.igdbId, gameOnDb.igdbId)))
+  }else if (gameOnDb?.steamId === 0 && gameOnDb.igdbId && gameOnDb.igdbId > 0){
+        if (isAfter(addDays(gameOnDb?.updatedAt as Date, 1), new Date()) ){
+          const gameOnIGDB = await findOnIGDB("", gameOnDb.igdbId)
+          if (!gameOnIGDB) return
+          const data = IGDBToGameForDb(gameOnIGDB)
+          await db.update(game).set(data).where((eq(game.igdbId, gameOnDb.igdbId)))
+        }
     // update non steam game
     // for now we do not upload non steam games but would be easy
   }
