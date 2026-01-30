@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { db } from "./src/db";
-import { game, vote } from "./src/db/schema";
-import { getInfobyId } from "./src/lib";
+import { db } from "../src/db";
+import { game, vote } from "../src/db/schema";
+import { getInfobyId } from "../src/lib";
 import { TZDate } from "@date-fns/tz";
 
 /**

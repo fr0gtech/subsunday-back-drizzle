@@ -60,7 +60,24 @@ export async function createGameFromIGDB(gameIGDB: GameIGDB) : Promise<Game[]> {
     const data = IGDBToGameForDb(gameIGDB)
     return await db.insert(game).values(data).returning()
 }
-
+export async function findOnIGDBBySlug(slug: string){
+        const game = await IGDBreq<GameIGDB[]>('games',
+            `fields name,websites.url,websites.type,screenshots.url,genres.name,videos.video_id,cover.url,summary,storyline,artworks.url,game_status;
+            where slug = "${slug}";`
+        )
+        console.log(game);
+        
+        if (!game){
+            return null
+        }
+        if ([6,7,8].includes(game[0]?.game_status as number)){
+            // game is rumored, delisted or cancelled
+            return null
+        }
+        // console.log(JSON.stringify(game));
+        
+        return {...game[0], websites: game[0]?.websites?.sort((a,b) => a.type - b.type)} as GameIGDB
+}
 export async function findOnIGDB(query: string): Promise<GameIGDB | null> {
         // only thing we can do is req hypes for all games?
         

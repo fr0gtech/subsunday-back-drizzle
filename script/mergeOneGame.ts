@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "./src/db";
-import { game, vote } from "./src/db/schema";
+import { db } from "../src/db";
+import { game, vote } from "../src/db/schema";
 import { sleep } from "bun";
 
 const [num1, num2] = Bun.argv.slice(2).map(Number);;

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "./src/db";
-import { game, vote } from "./src/db/schema";
+import { db } from "../src/db";
+import { game, vote } from "../src/db/schema";
 
 (async () => {
     const games = await db.select().from(game);
