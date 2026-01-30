@@ -22,6 +22,8 @@ import { registerVote } from "../src"
         const toGet = parseInt(day) + (fromTo[0] as number)
         const data: any = await fetch("https://logs.zonian.dev/channel/lirik/2026/1/" + toGet + "?jsonBasic=1").then((e) => e.json())
         allChats.push(...data.messages)
+        console.log(`got ${allChats.length} messages`);
+        
     }
     for (const msg in allChats) {
         const chat = allChats[msg]
