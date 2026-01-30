@@ -16,11 +16,11 @@ import { registerVote } from "../src"
 
 (async () => {
     await loadGames()
-    const fromTo = [12,13,14,15,16,17,18,19,20]
+    const fromTo = [12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]
     const allChats = []
     for (const day in fromTo) {
         const toGet = parseInt(day) + (fromTo[0] as number)
-        const data: any = await fetch("https://logs.zonian.dev/channel/lirik/2025/11/" + toGet + "?jsonBasic=1").then((e) => e.json())
+        const data: any = await fetch("https://logs.zonian.dev/channel/lirik/2026/1/" + toGet + "?jsonBasic=1").then((e) => e.json())
         allChats.push(...data.messages)
     }
     for (const msg in allChats) {
