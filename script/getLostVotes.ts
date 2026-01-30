@@ -28,6 +28,7 @@ import { registerVote } from "../src"
         if ((chat.text as string).startsWith('!vote')) {
             const gameDirty = chat.text.trim().split("!vote")
             const game = (gameDirty[1] as string).trim();
+            console.log("regvote: " + game + " by: " + chat.tags["user-id"] + " - " + chat.timestamp);
             await registerVote(chat.tags, game, chat.timestamp)
         }
     }
