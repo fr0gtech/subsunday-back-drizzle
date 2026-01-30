@@ -31,9 +31,8 @@ const id = parseInt(args[1] as any);
     }
 
     const data = IGDBToGameForDb(IGDBGame)
-    console.log(data);
     
-    await db.update(game).set(data)
+    await db.update(game).set(data).where(eq(game.id, toUpdate.id))
 
     // then update game to use igdb
 })()
