@@ -15,7 +15,8 @@ import {
   delay,
   increment,
   updateGame,
-  checkIfSteamBanned
+  checkIfSteamBanned,
+  updateGameIGDB
 } from "./lib";
 import { sleep } from "bun";
 
@@ -30,8 +31,8 @@ import {
   type AnyColumn
 } from "drizzle-orm";
 
-import { user, vote } from "./db/schema";
-import { createGameFromIGDB, findOnIGDB } from "./igdb";
+import { game, user, vote } from "./db/schema";
+import { createGameFromIGDB, findOnIGDB, IGDBToGameForDb } from "./igdb";
 import type { Game } from "./db/types";
 
 const CHANNEL = process.env.TWITCH_CHANNEL_NAME;
@@ -101,7 +102,7 @@ export async function registerVote(userstate: ChatUserstate, gameMsg: string, ti
   const now = timestamp ? new Date(timestamp) : new Date()
 
   const range = getDateRange({ offset: now })
-  
+
   let userById: any
   userById = await db.query.user.findFirst({
     where: ((user, { eq }) => eq(user.id, parseInt(userstate["user-id"] as string) || 0)),
@@ -217,6 +218,10 @@ export async function findGame(gameMsg: string){
       }
     }
   }else if (gameOnDb?.steamId === 0 && gameOnDb.igdbId){
+      const gameOnIGDB = await findOnIGDB("", gameOnDb.igdbId)
+      if (!gameOnIGDB) return
+      const data = IGDBToGameForDb(gameOnIGDB)
+      await db.update(game).set(data).where((eq(game.igdbId, gameOnDb.igdbId)))
     // update non steam game
     // for now we do not upload non steam games but would be easy
   }

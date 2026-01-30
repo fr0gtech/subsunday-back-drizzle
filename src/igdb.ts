@@ -65,7 +65,6 @@ export async function findOnIGDBBySlug(slug: string){
             `fields name,websites.url,websites.type,screenshots.url,genres.name,videos.video_id,cover.url,summary,storyline,artworks.url,game_status;
             where slug = "${slug}";`
         )
-        console.log(game);
         
         if (!game){
             return null
@@ -78,32 +77,38 @@ export async function findOnIGDBBySlug(slug: string){
         
         return {...game[0], websites: game[0]?.websites?.sort((a,b) => a.type - b.type)} as GameIGDB
 }
-export async function findOnIGDB(query: string): Promise<GameIGDB | null> {
+export async function findOnIGDB(query: string, id?:number): Promise<GameIGDB | null> {
         // only thing we can do is req hypes for all games?
         
         // we have to use a huge limit because for example if we search for fortnite we dont get the actuall game even with 100 limit
         // maybe we could try first with 10 and them load more if we cant find exact match but idk
-        const cleanedSearch = query.replace(/[^\x00-\x7F]/g, '');
-        const gameSearchRaw = await IGDBreq<GameFromSearch[]>('search', `search "${cleanedSearch}"; fields game,name;limit 500;`)
-        if (gameSearchRaw.length === 0){
-            console.log("could not find any game in IGDB:", cleanedSearch);
-            return null
-        }
-        const gameSearchIds = gameSearchRaw.map((e)=>e.game).filter((e)=>e)
-        
-        const allSearchedGames = await IGDBreq<MultiQuery<GameFromSearchHypes[]>[]>('multiquery',
-            `query games "searchedGames" {
-                fields name,game_type;
-                where id = (${gameSearchIds});
-                sort game_type asc;
-            };`
-        )
-        
-        const gameSearch = allSearchedGames[0]?.result
-        if (!gameSearch) return null
+        let gameFound;
+        if (id){
+            gameFound = {id}
+        }else{
 
-        const exactMatch = gameSearch.find((game)=>game.name.toLowerCase() === cleanedSearch.toLowerCase())
-        let gameFound = exactMatch
+            const cleanedSearch = query.replace(/[^\x00-\x7F]/g, '');
+            const gameSearchRaw = await IGDBreq<GameFromSearch[]>('search', `search "${cleanedSearch}"; fields game,name;limit 500;`)
+            if (gameSearchRaw.length === 0){
+                console.log("could not find any game in IGDB:", cleanedSearch);
+                return null
+            }
+            const gameSearchIds = gameSearchRaw.map((e)=>e.game).filter((e)=>e)
+            
+            const allSearchedGames = await IGDBreq<MultiQuery<GameFromSearchHypes[]>[]>('multiquery',
+                `query games "searchedGames" {
+                    fields name,game_type;
+                    where id = (${gameSearchIds});
+                    sort game_type asc;
+                };`
+            )
+            
+            const gameSearch = allSearchedGames[0]?.result
+            if (!gameSearch) return null
+    
+            const exactMatch = gameSearch.find((game)=>game.name.toLowerCase() === cleanedSearch.toLowerCase())
+            gameFound = exactMatch
+        }
 
         // if we do not match exact make sure that at least something matches otherwise we get stuff like:
         // found game on IGDB for Returnal™ - 3: Donkey Kong Country Returns HD, this was kinda fixed by only allowing asci but yeah we only look for exact matches..
