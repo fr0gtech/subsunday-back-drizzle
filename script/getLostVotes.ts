@@ -4,6 +4,7 @@ import { isAfter } from "date-fns"
 import { loadGames, getDateRange, getSteamAppIdFromURL, getGameOnDb, findClosestSteamGame, createGameOnDb, increment } from "../src/lib"
 import { db } from "../src/db"
 import { user, vote } from "../src/db/schema"
+import { registerVote } from "../src"
 
 /**
  * This gets chat logs from a random api for x days and does the voting logic.
@@ -27,82 +28,10 @@ import { user, vote } from "../src/db/schema"
         if ((chat.text as string).startsWith('!vote')) {
             const gameDirty = chat.text.trim().split("!vote")
             const game = (gameDirty[1] as string).trim();
-            await registerVoteWtime(chat.tags, game, chat.timestamp)
+            await registerVote(chat.tags, game, chat.timestamp)
         }
     }
 
 })()
 
-async function registerVoteWtime(userstate: ChatUserstate, gameMsg: string, timestamp: string) {
-    console.log("regvote: " + gameMsg + " by: " + userstate["user-id"] + " - " + timestamp);
-    const now = new Date(timestamp)
-    const range = getDateRange({ offset: now })
 
-    let userById: any
-    userById = await db.query.user.findFirst({
-        where: ((user, { eq }) => eq(user.id, parseInt(userstate["user-id"] as string) || 0)),
-    })
-    if (!userById) {
-        userById = await db.insert(user).values({
-            id: parseInt(userstate["user-id"] as string) || 0,
-            name: userstate["display-name"] as string,
-            sub: userstate.subscriber || false,
-            createdAt: now,
-            updatedAt: now,
-            streak: 0
-        }).returning().then((res) => res[0])
-    }
-
-    const lastVote = await db.query.vote.findFirst({
-        where:
-            and(
-                eq(vote.fromId, parseInt(userstate["user-id"] as string) || 0),
-                between(vote.createdAt, range.currentPeriod.startDate,
-                    range.currentPeriod.endDate
-                ))
-    })
-
-    const isAfterEnd = isAfter(now, range.currentPeriod.endDate)
-
-    if (isAfterEnd) {
-        console.log(`[SUB] ${user.name} cannot vote out of range, game: ${gameMsg}`);
-        return;
-    }
-
-    let idFromLink = getSteamAppIdFromURL(gameMsg)
-    let gameOnDb = await getGameOnDb(gameMsg, idFromLink)
-
-    if (!gameOnDb) {
-        const match = idFromLink ? { name: "", appId: parseInt(idFromLink) } : await findClosestSteamGame(gameMsg)
-        const newGame = await createGameOnDb(match, gameMsg)
-        gameOnDb = newGame[0]
-    }
-
-    if (lastVote) {
-        
-        await db.update(vote).set({
-            forId: gameOnDb?.id,
-            updatedAt: now
-        })
-        .where(eq(vote.id, lastVote.id))
-
-    } else {
-
-        await db.insert(vote).values({
-            forId: gameOnDb?.id as number,
-            fromId: userById.id as number,
-            voteText: gameMsg,
-            updatedAt: now,
-            createdAt: now
-        }).returning()
-
-        // we increment no matter what?
-        await db.update(user).set({
-            streak: increment(user.streak)
-        })
-        .where(eq(user.id, userById.id));
-        
-    }
-
-    if (!gameOnDb) throw new Error("no game")
-}

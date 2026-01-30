@@ -81,7 +81,7 @@ export async function onMessage(message: string, userstate: ChatUserstate) {
   }
 }
 
-export async function registerVote(userstate: ChatUserstate, gameMsg: string) {
+export async function registerVote(userstate: ChatUserstate, gameMsg: string, timestamp?: string) {
   // how we match games.
   /**
    * @param userstate
@@ -98,9 +98,10 @@ export async function registerVote(userstate: ChatUserstate, gameMsg: string) {
    * 5. Add game with no info or with info that we found
    */
 
-  const now = new Date()
+  const now = timestamp ? new Date(timestamp) : new Date()
 
-  const range = getDateRange()
+  const range = getDateRange({ offset: now })
+  
   let userById: any
   userById = await db.query.user.findFirst({
     where: ((user, { eq }) => eq(user.id, parseInt(userstate["user-id"] as string) || 0)),
