@@ -24,7 +24,6 @@ export const initSocket = () => {
     io.on("connection", (socket) => {
         
         const ip = getClientIP(socket)
-        console.log("new user:", ip);
         
         connectedIPs.add(ip as string);
         io.emit("onlineCount", connectedIPs.size);
