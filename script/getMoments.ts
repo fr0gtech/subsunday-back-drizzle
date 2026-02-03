@@ -71,6 +71,7 @@ import { getGameOnDb, getMoments, type MomentType } from "../src/lib";
                 })))
 
             }
+            continue;
         } // skip if we already got it
         await db.insert(subSundayStream).values({
             streamId: stream.id,
