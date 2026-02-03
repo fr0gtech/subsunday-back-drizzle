@@ -12,6 +12,8 @@ const { currentPeriod } = getDateRange();
       votes: true,
     },
   })
+  console.log(`loaded ${users.length} users`);
+  
   const now = new Date();
 
   function hasVoteInPeriod(votes: Vote[], period: any) {
