@@ -6,18 +6,14 @@ import { isWithinInterval } from "date-fns";
 import type { Vote } from "../src/db/types";
 
 (async () => {
-const { currentPeriod } = getDateRange();
-  const users = await db.query.user.findMany({
-    with: {
-      votes: true,
-    },
-  })
-  console.log(`loaded ${users.length} users`);
-  
+  const { currentPeriod } = getDateRange();
   const now = new Date();
+  const BATCH_SIZE = 100; 
+  let offset = 0;
+  let processedCount = 0;
 
   function hasVoteInPeriod(votes: Vote[], period: any) {
-    return votes.some((v: { createdAt: string | number | Date; }) =>
+    return votes.some((v: { createdAt: string | number | Date }) =>
       isWithinInterval(v.createdAt, {
         start: period.startDate,
         end: period.endDate,
@@ -25,43 +21,66 @@ const { currentPeriod } = getDateRange();
     );
   }
 
-  for (const userWithStreak of users) {
-    const votes = [...userWithStreak.votes].sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
+  while (true) {
+    const users = await db.query.user.findMany({
+      limit: BATCH_SIZE,
+      offset: offset,
+      with: {
+        votes: true,
+      },
+    });
 
-    let streak = 0;
+    if (users.length === 0) {
+      break; 
+    }
 
-    let period = currentPeriod;
+    console.log(`Processing batch: ${offset} to ${offset + users.length}`);
 
-    let run = true
-    while (run) {
-      const voted = hasVoteInPeriod(votes, period);
-      
-      const isCurrent = isWithinInterval(now, {
-        start: period.startDate,
-        end: period.endDate,
-      });
+    for (const userWithStreak of users) {
+      const votes = [...userWithStreak.votes].sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
 
-      if (voted && !isCurrent) {
-        // vote but not current = +1
+      let streak = 0;
+      let period = currentPeriod;
+      let run = true;
+
+      while (run) {
+        const voted = hasVoteInPeriod(votes, period);
+        const isCurrent = isWithinInterval(now, {
+          start: period.startDate,
+          end: period.endDate,
+        });
+
+        if (voted && !isCurrent) {
           streak++;
+        }
+
+        if (!voted && !isCurrent) {
+          run = false;
+          break;
+        }
+
+        period = getDateRange({ offset: period.startDate }).lastPeriod;
       }
-      if (!voted && !isCurrent) {
-        // not voted and not current = break streak
-        run = false  
-        break;
-          
-      } 
-      period = getDateRange({ offset: period.startDate }).lastPeriod;
+
+      if (userWithStreak.streak !== streak) {
+        console.log(
+          `${userWithStreak.name} old:${userWithStreak.streak} new:${streak}`
+        );
+      }
+
+      await db
+        .update(user)
+        .set({ streak })
+        .where(eq(user.id, userWithStreak.id));
+
+      processedCount++;
     }
 
-    if (userWithStreak.streak !== streak) {
-      console.log(`${userWithStreak.name} old:${userWithStreak.streak} new:${streak}`);
-    }
-
-    await db.update(user)
-      .set({ streak })
-      .where(eq(user.id, userWithStreak.id));
+    offset += BATCH_SIZE;
+    console.log(`processed ${processedCount} users so far...`);
   }
-  })()
+
+  console.log(`finished processing ${processedCount} users`);
+})();
