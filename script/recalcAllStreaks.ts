@@ -10,8 +10,8 @@ const { currentPeriod } = getDateRange();
   const users = await db.query.user.findMany({
     with: {
       votes: true,
-    }
-  });
+    },
+  })
   const now = new Date();
 
   function hasVoteInPeriod(votes: Vote[], period: any) {
@@ -32,24 +32,31 @@ const { currentPeriod } = getDateRange();
 
     let period = currentPeriod;
 
-    while (true) {
+    let run = true
+    while (run) {
       const voted = hasVoteInPeriod(votes, period);
-
+      
       const isCurrent = isWithinInterval(now, {
         start: period.startDate,
         end: period.endDate,
       });
 
-      if (voted) {
-        streak++;
-      } else {
-        if (isCurrent) {
-          // do NOT break streak for current open period
-        } else {
-          // streak ends
-          break;
-        }
+      if (voted && !isCurrent) {
+        // vote but not current = +1
+          period = getDateRange({ offset: period.startDate }).lastPeriod;
+          streak++;
       }
+      if (!voted && !isCurrent) {
+        // not voted and not current = break streak
+        run = false  
+        break;
+          
+      } 
+      if (isCurrent) {
+          period = getDateRange({ offset: period.startDate }).lastPeriod;
+          continue
+      }
+      
       period = getDateRange({ offset: period.startDate }).lastPeriod;
     }
 
