@@ -51,9 +51,6 @@ const { currentPeriod } = getDateRange();
         break;
           
       } 
-      if (isCurrent) {
-          continue
-      }
       period = getDateRange({ offset: period.startDate }).lastPeriod;
     }
 
