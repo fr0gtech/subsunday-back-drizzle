@@ -43,7 +43,6 @@ const { currentPeriod } = getDateRange();
 
       if (voted && !isCurrent) {
         // vote but not current = +1
-          period = getDateRange({ offset: period.startDate }).lastPeriod;
           streak++;
       }
       if (!voted && !isCurrent) {
@@ -53,10 +52,8 @@ const { currentPeriod } = getDateRange();
           
       } 
       if (isCurrent) {
-          period = getDateRange({ offset: period.startDate }).lastPeriod;
           continue
       }
-      
       period = getDateRange({ offset: period.startDate }).lastPeriod;
     }
 
