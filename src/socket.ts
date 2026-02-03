@@ -11,12 +11,20 @@ export const io = new Server(server, {
 // track unique ips for online user count thing
 const connectedIPs = new Set<string>();
 
+function getClientIP(socket: any): string {
+    return (
+        socket.handshake.headers['cf-connecting-ip'] || // Cloudflare
+        socket.handshake.headers['x-forwarded-for']?.split(',')[0].trim() || 
+        socket.handshake.headers['x-real-ip'] ||
+        socket.handshake.address
+    );
+}
+
 export const initSocket = () => {
     io.on("connection", (socket) => {
-
-        const ip = socket.handshake.address || 
-                socket.handshake.headers['x-forwarded-for'] || 
-                socket.handshake.headers['x-real-ip'];
+        console.log(socket.handshake);
+        
+        const ip = getClientIP(socket)
         connectedIPs.add(ip as string);
         io.emit("onlineCount", connectedIPs.size);
         socket.on("join", (data) => {
@@ -28,9 +36,7 @@ export const initSocket = () => {
         socket.on("disconnect", () => {
             const hasOtherConnection = Array.from(io.sockets.sockets.values())
                 .some(s => {
-                    const otherIp = s.handshake.address || 
-                                   s.handshake.headers['x-forwarded-for'] || 
-                                   s.handshake.headers['x-real-ip'];
+                    const otherIp = getClientIP(s);
                     return otherIp === (ip as string) && s.id !== socket.id;
                 });
             
