@@ -22,7 +22,6 @@ function getClientIP(socket: any): string {
 
 export const initSocket = () => {
     io.on("connection", (socket) => {
-        console.log(socket.handshake);
         
         const ip = getClientIP(socket)
         connectedIPs.add(ip as string);
