@@ -93,6 +93,7 @@ export async function findOnIGDB(query: string, id?:number): Promise<GameIGDB | 
                 console.log("could not find any game in IGDB:", cleanedSearch);
                 return null
             }
+      
             const gameSearchIds = gameSearchRaw.map((e)=>e.game).filter((e)=>e)
             
             const allSearchedGames = await IGDBreq<MultiQuery<GameFromSearchHypes[]>[]>('multiquery',
