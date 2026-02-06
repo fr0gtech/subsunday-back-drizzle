@@ -8,7 +8,7 @@ import type { Vote } from "../src/db/types";
 (async () => {
   const { currentPeriod } = getDateRange();
   const now = new Date();
-  const BATCH_SIZE = 100; 
+  const BATCH_SIZE = 500; 
   let offset = 0;
   let processedCount = 0;
 
@@ -54,8 +54,9 @@ import type { Vote } from "../src/db/types";
 
         if (voted && !isCurrent) {
           streak++;
+        } else if (voted && isCurrent) {
+          streak++;
         }
-
         if (!voted && !isCurrent) {
           run = false;
           break;
