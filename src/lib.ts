@@ -89,19 +89,24 @@ export const getGameOnDb = async (gameMsg: string, steamId: string | undefined) 
     // https://orm.drizzle.team/docs/guides/postgresql-full-text-search we could also set weight for title and desc and stuff
     return await db.query.game.findFirst({
       where: sql`
-    to_tsvector('english', ${game.name})
-    @@ plainto_tsquery('english', ${gameMsg})
-  `,
-    orderBy: sql`
-    CASE 
-      WHEN LOWER(${game.name}) = LOWER(${gameMsg}) THEN 0
-      WHEN LOWER(${game.name}) LIKE LOWER(${gameMsg}) || '%' THEN 1
-      ELSE 2
-    END,
-    LENGTH(${game.name}),
-    ${game.recommendations} DESC,
-    ${game.id}
-  `
+        (
+          LOWER(${game.name}) = LOWER(${gameMsg})
+          OR
+          (
+            LOWER(${game.name}) LIKE LOWER(${gameMsg}) || '%'
+            AND LENGTH(${gameMsg}) >= LENGTH(${game.name}) * 0.5
+          )
+        )
+      `,
+      orderBy: sql`
+        CASE 
+          WHEN LOWER(${game.name}) = LOWER(${gameMsg}) THEN 0
+          ELSE 1
+        END,
+        LENGTH(${game.name}),
+        ${game.recommendations} DESC,
+        ${game.id}
+      `
     });
   }
 }
