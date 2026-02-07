@@ -25,7 +25,6 @@ import { checkIfSteamBanned, findClosestSteamGame, getInfobyId, getSteamAppIdFro
             eq(game.steamId, 0)
      ),
    });
-   console.log(games.length);
    
    for (const gameEl of games) {
         // we try to find game, this will return the game on db tho
