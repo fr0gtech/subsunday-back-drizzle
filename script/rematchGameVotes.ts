@@ -22,15 +22,16 @@ const args = process.argv.slice(2);
 const gameId = args[0];
 
 
-(async ()=>{
+(async () => {
 
-    if (!gameId){
+    if (!gameId) {
         throw new Error("no input game")
     }
-
-   const gameToUpdate = await db.query.game.findFirst({
+    await loadGames()
+    await initIGDB()
+    const gameToUpdate = await db.query.game.findFirst({
         where: eq(game.id, parseInt(gameId as string)),
-        with:{
+        with: {
             votes: {
                 with: {
                     game: true
@@ -38,35 +39,35 @@ const gameId = args[0];
             }
         }
     })
-   
-    if (!gameToUpdate){
+
+    if (!gameToUpdate) {
         throw new Error("no game found")
     }
-      for (const voteEl of gameToUpdate.votes) {
+    for (const voteEl of gameToUpdate.votes) {
         if (voteEl.voteText.toLowerCase() === voteEl.game.name.toLowerCase()) continue;
         let idFromLink = getSteamAppIdFromURL(voteEl.voteText)
         let gameOnDb: Game | undefined = await getGameOnDb(voteEl.voteText, idFromLink)
         const match = idFromLink ? { name: "", appId: parseInt(idFromLink) } : await findClosestSteamGame(voteEl.voteText)
 
         if (!match.appId && !gameOnDb) {
-          const gameOnIGDB = await findOnIGDB(voteEl.voteText)
+            const gameOnIGDB = await findOnIGDB(voteEl.voteText)
 
-          if (gameOnIGDB) {
-            const newGame = await createGameFromIGDB(gameOnIGDB)
-            gameOnDb = newGame[0]
-          } else {
+            if (gameOnIGDB) {
+                const newGame = await createGameFromIGDB(gameOnIGDB)
+                gameOnDb = newGame[0]
+            } else {
+                const newGame = await createGameOnDb(match, voteEl.voteText)
+                gameOnDb = newGame[0]
+            }
+        } else if (!gameOnDb) {
             const newGame = await createGameOnDb(match, voteEl.voteText)
             gameOnDb = newGame[0]
-          }
-        } else if (!gameOnDb) {
-          const newGame = await createGameOnDb(match, voteEl.voteText)
-          gameOnDb = newGame[0]
         }
 
         console.log(`matched ${voteEl.voteText} with ${gameOnDb?.name}`);
-        
+
         await db.update(vote).set({
-          forId: gameOnDb?.id
-        }).where(eq(vote.id, voteEl.id ))
-      }
+            forId: gameOnDb?.id
+        }).where(eq(vote.id, voteEl.id))
+    }
 })()
